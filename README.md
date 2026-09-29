@@ -43,20 +43,25 @@ A high-performance GitHub web client and API layer built with TypeScript, Node.j
 
 ### Environment Setup
 
-1. Copy the example environment files:
+1. Generate cryptographic secrets:
+   ```bash
+   pnpm generate:key
+   ```
+
+2. Copy the example environment files:
    ```bash
    cp apps/api/.env.example apps/api/.env
    cp apps/web/.env.example apps/web/.env
    ```
 
-2. Configure `apps/api/.env` with your GitHub OAuth credentials and encryption key:
+3. Configure `apps/api/.env` with your generated secrets and GitHub OAuth credentials:
    ```env
    PORT=8787
    APP_URL=http://localhost:5173
    API_URL=http://localhost:8787
-   SESSION_SECRET=<32+ char secret>
-   TOKEN_ENCRYPTION_KEY=<32-byte base64 encoded key>
-   DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitclone
+   SESSION_SECRET=<generated_session_secret>
+   TOKEN_ENCRYPTION_KEY=<generated_base64_key>
+   DATABASE_URL=postgres://gitclone:gitclone@localhost:5432/gitclone
    REDIS_URL=redis://localhost:6379
    GITHUB_CLIENT_ID=your_github_oauth_client_id
    GITHUB_CLIENT_SECRET=your_github_oauth_client_secret

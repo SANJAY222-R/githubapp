@@ -11,7 +11,8 @@
     "test": "pnpm --filter @gitclone/api test",
     "build": "pnpm -r build",
     "generate:key": "pnpm --filter @gitclone/api exec tsx ../../scripts/generate-key.ts",
-    "smoke:test": "pnpm --filter @gitclone/api exec tsx ../../scripts/smoke-test.ts"
+    "smoke:test": "pnpm --filter @gitclone/api exec tsx ../../scripts/smoke-test.ts",
+    "seed": "pnpm --filter @gitclone/api exec tsx ../../scripts/seed.ts"
   },
   "devDependencies": {
     "concurrently": "^9.0.0",
