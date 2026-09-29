@@ -19,13 +19,18 @@ import { AuditLogPage } from "../features/audit/AuditLogPage.js";
 import { AiToolsPage } from "../features/ai/AiToolsPage.js";
 import { http } from "../lib/http.js";
 import { queryClient } from "../lib/queryClient.js";
+import { wipeClientData } from "../lib/persister.js";
 
 function NavBar() {
   const { user, refetch } = useAuth();
   const logout = async () => {
-    await http.post("/auth/disconnect");
-    queryClient.clear();
-    refetch();
+    try {
+      await http.post("/auth/disconnect");
+    } finally {
+      wipeClientData();
+      queryClient.clear();
+      refetch();
+    }
   };
   return (
     <nav style={{ background: "#24292f", color: "#fff", padding: "10px 24px", display: "flex", alignItems: "center", gap: 20 }}>
