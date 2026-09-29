@@ -10,7 +10,7 @@ export function CommitListPage() {
 
   const { data } = useQuery({
     queryKey: ["commits", fullName],
-    queryFn: () => http.get<Commit[]>(`/${fullName}/commits`),
+    queryFn: () => http.get<Commit[]>(`/repos/${fullName}/commits`),
   });
 
   return (

@@ -12,7 +12,7 @@ export function NewIssuePage() {
   const [body, setBody] = useState("");
 
   const mutation = useMutation({
-    mutationFn: () => http.post<{ number: number }>(`/${fullName}/issues`, { title, body }),
+    mutationFn: () => http.post<{ number: number }>(`/repos/${fullName}/issues`, { title, body }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["issues", fullName] });
       navigate(`/repos/${fullName}/issues/${data.number}`);

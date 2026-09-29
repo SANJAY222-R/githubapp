@@ -13,11 +13,11 @@ export function PullDetailPage() {
 
   const { data } = useQuery({
     queryKey: ["pull", fullName, number],
-    queryFn: () => http.get<PR>(`/${fullName}/pulls/${number}`),
+    queryFn: () => http.get<PR>(`/repos/${fullName}/pulls/${number}`),
   });
 
   const mergeMutation = useMutation({
-    mutationFn: () => http.post(`/${fullName}/pulls/${number}/merge`, { mergeMethod }),
+    mutationFn: () => http.post(`/repos/${fullName}/pulls/${number}/merge`, { mergeMethod }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["pulls", fullName] }),
   });
 

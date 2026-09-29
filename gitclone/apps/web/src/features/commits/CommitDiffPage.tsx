@@ -11,7 +11,7 @@ export function CommitDiffPage() {
 
   const { data } = useQuery({
     queryKey: ["commitDiff", fullName, sha],
-    queryFn: () => http.get<CommitDetail>(`/${fullName}/commits/${sha}`),
+    queryFn: () => http.get<CommitDetail>(`/repos/${fullName}/commits/${sha}`),
   });
 
   return (

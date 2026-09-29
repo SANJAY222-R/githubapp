@@ -13,7 +13,7 @@ export function PullListPage() {
 
   const { data } = useQuery({
     queryKey: ["pulls", fullName, state],
-    queryFn: () => http.get<PR[]>(`/${fullName}/pulls?state=${state}`),
+    queryFn: () => http.get<PR[]>(`/repos/${fullName}/pulls?state=${state}`),
   });
 
   return (

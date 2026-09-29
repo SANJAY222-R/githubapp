@@ -15,16 +15,16 @@ export function BranchesPage() {
 
   const { data } = useQuery({
     queryKey: ["branches", fullName],
-    queryFn: () => http.get<Branch[]>(`/${fullName}/branches`),
+    queryFn: () => http.get<Branch[]>(`/repos/${fullName}/branches`),
   });
 
   const createMutation = useMutation({
-    mutationFn: () => http.post(`/${fullName}/branches`, { name: newBranch, from: fromBranch }),
+    mutationFn: () => http.post(`/repos/${fullName}/branches`, { name: newBranch, from: fromBranch }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["branches", fullName] }); setNewBranch(""); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (name: string) => http.delete(`/${fullName}/branches/${name}`),
+    mutationFn: (name: string) => http.delete(`/repos/${fullName}/branches/${name}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["branches", fullName] }),
   });
 

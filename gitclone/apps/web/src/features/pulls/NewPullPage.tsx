@@ -15,7 +15,7 @@ export function NewPullPage() {
   const [draft, setDraft] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: () => http.post<{ number: number }>(`/${fullName}/pulls`, { title, body, head, base, draft }),
+    mutationFn: () => http.post<{ number: number }>(`/repos/${fullName}/pulls`, { title, body, head, base, draft }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["pulls", fullName] });
       navigate(`/repos/${fullName}/pulls/${data.number}`);

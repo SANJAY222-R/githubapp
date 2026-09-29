@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./styles/globals.css";
 import { QueryProvider } from "./providers/QueryProvider.js";
 import { AuthProvider } from "./providers/AuthProvider.js";
 import { RealtimeProvider } from "./providers/RealtimeProvider.js";

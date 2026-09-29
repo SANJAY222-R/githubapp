@@ -11,7 +11,7 @@ export function IssueDetailPage() {
 
   const { data } = useQuery({
     queryKey: ["issue", fullName, number],
-    queryFn: () => http.get<Issue>(`/${fullName}/issues/${number}`),
+    queryFn: () => http.get<Issue>(`/repos/${fullName}/issues/${number}`),
   });
 
   if (!data) return <div style={{ padding: 24 }}>Loading...</div>;

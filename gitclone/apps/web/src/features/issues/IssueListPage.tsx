@@ -13,7 +13,7 @@ export function IssueListPage() {
 
   const { data } = useQuery({
     queryKey: ["issues", fullName, state],
-    queryFn: () => http.get<Issue[]>(`/${fullName}/issues?state=${state}`),
+    queryFn: () => http.get<Issue[]>(`/repos/${fullName}/issues?state=${state}`),
   });
 
   return (

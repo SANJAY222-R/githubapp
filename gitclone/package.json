@@ -9,7 +9,9 @@
     "lint": "pnpm -r typecheck",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter @gitclone/api test",
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "generate:key": "pnpm --filter @gitclone/api exec tsx ../../scripts/generate-key.ts",
+    "smoke:test": "pnpm --filter @gitclone/api exec tsx ../../scripts/smoke-test.ts"
   },
   "devDependencies": {
     "concurrently": "^9.0.0",
