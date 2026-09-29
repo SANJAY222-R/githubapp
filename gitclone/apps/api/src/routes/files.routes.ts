@@ -5,27 +5,36 @@ import { getTree, getFile, putFile, deleteFile } from "../services/files.service
 import { deleteFolder } from "../services/folder-delete.service.js";
 import { PutFileSchema, DeleteFileSchema, DeleteFolderSchema } from "@gitclone/shared";
 import { writeAudit } from "../services/audit.service.js";
+import { assertOwnerRepo, validateFilePath, validateGitRef } from "../security/validators.js";
+import { fileBodyLimit } from "../middleware/bodyLimit.js";
+import { destructiveRateLimit } from "../middleware/destructiveRateLimit.js";
 
 const app = new Hono();
 
 app.get("/:owner/:repo/tree", requireAuth, async (c) => {
   const user = c.get("user");
   const { owner, repo } = c.req.param();
-  const ref = c.req.query("ref") ?? "HEAD";
+  assertOwnerRepo(owner, repo);
+  const rawRef = c.req.query("ref") ?? "HEAD";
+  const ref = rawRef === "HEAD" ? "HEAD" : validateGitRef(rawRef);
   return c.json(await getTree(user.id, owner, repo, ref));
 });
 
 app.get("/:owner/:repo/file", requireAuth, async (c) => {
   const user = c.get("user");
   const { owner, repo } = c.req.param();
-  const path = c.req.query("path") ?? "";
-  const ref = c.req.query("ref");
+  assertOwnerRepo(owner, repo);
+  const rawPath = c.req.query("path") ?? "";
+  const path = validateFilePath(rawPath, { allowEmpty: true });
+  const rawRef = c.req.query("ref");
+  const ref = rawRef ? validateGitRef(rawRef) : undefined;
   return c.json(await getFile(user.id, owner, repo, path, ref));
 });
 
-app.put("/:owner/:repo/file", requireAuth, zValidator("json", PutFileSchema), async (c) => {
+app.put("/:owner/:repo/file", requireAuth, fileBodyLimit, zValidator("json", PutFileSchema), async (c) => {
   const user = c.get("user");
   const { owner, repo } = c.req.param();
+  assertOwnerRepo(owner, repo);
   const body = c.req.valid("json");
   try {
     const result = await putFile(user.id, owner, repo, body);
@@ -40,6 +49,7 @@ app.put("/:owner/:repo/file", requireAuth, zValidator("json", PutFileSchema), as
 app.delete("/:owner/:repo/file", requireAuth, zValidator("json", DeleteFileSchema), async (c) => {
   const user = c.get("user");
   const { owner, repo } = c.req.param();
+  assertOwnerRepo(owner, repo);
   const body = c.req.valid("json");
   try {
     await deleteFile(user.id, owner, repo, body);
@@ -51,9 +61,10 @@ app.delete("/:owner/:repo/file", requireAuth, zValidator("json", DeleteFileSchem
   }
 });
 
-app.delete("/:owner/:repo/folder", requireAuth, zValidator("json", DeleteFolderSchema), async (c) => {
+app.delete("/:owner/:repo/folder", destructiveRateLimit, requireAuth, zValidator("json", DeleteFolderSchema), async (c) => {
   const user = c.get("user");
   const { owner, repo } = c.req.param();
+  assertOwnerRepo(owner, repo);
   const body = c.req.valid("json");
   try {
     const result = await deleteFolder(user.id, owner, repo, body);

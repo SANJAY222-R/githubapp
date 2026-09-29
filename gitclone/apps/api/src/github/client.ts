@@ -2,7 +2,7 @@ import { Octokit } from "@octokit/rest";
 import { db } from "../db/client.js";
 import { credentials } from "../db/schema/credentials.js";
 import { eq } from "drizzle-orm";
-import { decryptToken } from "../security/vault.js";
+import { decryptCredentialToken } from "../security/vault.js";
 
 const clientCache = new Map<string, Octokit>();
 
@@ -19,7 +19,14 @@ export async function getGithubClient(userId: string): Promise<Octokit> {
   const cred = rows[0];
   if (!cred) throw new Error("No credential found for user");
 
-  const token = decryptToken(cred.tokenEnc);
+  const token = await decryptCredentialToken({
+    tokenEnc: cred.tokenEnc,
+    dekWrapped: cred.dekWrapped,
+    keyVersion: cred.keyVersion,
+    userId: cred.userId,
+    credentialId: cred.id,
+    authType: cred.authType,
+  });
 
   const client = new Octokit({
     auth: token,

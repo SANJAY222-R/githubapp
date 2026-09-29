@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { requireAuth } from "../middleware/requireAuth.js";
-import { getGithubClient } from "../github/client.js";
+import { getAuthenticatedUserProfile } from "../services/auth/session.service.js";
 import { db } from "../db/client.js";
 import { auditLog } from "../db/schema/audit-log.js";
 import { eq, desc } from "drizzle-orm";
@@ -9,20 +9,19 @@ const app = new Hono();
 
 app.get("/", requireAuth, async (c) => {
   const user = c.get("user");
-  const octokit = await getGithubClient(user.id);
-  const { data } = await octokit.users.getAuthenticated();
+  const profile = await getAuthenticatedUserProfile(user.id);
   return c.json({
     id: user.id,
     githubId: user.githubId,
     login: user.login,
     avatarUrl: user.avatarUrl,
-    name: data.name,
-    bio: data.bio,
-    company: data.company,
-    location: data.location,
-    publicRepos: data.public_repos,
-    followers: data.followers,
-    following: data.following,
+    name: profile.name,
+    bio: profile.bio,
+    company: profile.company,
+    location: profile.location,
+    publicRepos: profile.publicRepos,
+    followers: profile.followers,
+    following: profile.following,
   });
 });
 

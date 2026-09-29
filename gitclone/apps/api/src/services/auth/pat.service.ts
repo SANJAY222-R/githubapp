@@ -1,8 +1,9 @@
 import { Octokit } from "@octokit/rest";
+import { randomUUID } from "crypto";
 import { db } from "../../db/client.js";
 import { users } from "../../db/schema/users.js";
 import { credentials } from "../../db/schema/credentials.js";
-import { encryptToken } from "../../security/vault.js";
+import { encryptCredentialToken } from "../../security/vault.js";
 import { eq } from "drizzle-orm";
 import { mapGithubError } from "../../github/errors.js";
 
@@ -10,14 +11,15 @@ export async function connectPat(token: string): Promise<{ userId: string }> {
   const octokit = new Octokit({ auth: token });
 
   let githubUser: Awaited<ReturnType<typeof octokit.users.getAuthenticated>>["data"];
+  let scopes: string | undefined;
+
   try {
     const res = await octokit.users.getAuthenticated();
     githubUser = res.data;
+    scopes = (res.headers as Record<string, string | undefined>)["x-oauth-scopes"] ?? "";
   } catch (err) {
     throw mapGithubError(err);
   }
-
-  const tokenEnc = encryptToken(token);
 
   const existing = await db
     .select()
@@ -58,10 +60,23 @@ export async function connectPat(token: string): Promise<{ userId: string }> {
     userId = inserted[0].id;
   }
 
+  const credentialId = randomUUID();
+  const encrypted = await encryptCredentialToken({
+    token,
+    userId,
+    credentialId,
+    authType: "pat",
+  });
+
   await db.insert(credentials).values({
+    id: credentialId,
     userId,
     authType: "pat",
-    tokenEnc,
+    tokenEnc: encrypted.tokenEnc,
+    dekWrapped: encrypted.dekWrapped,
+    keyVersion: encrypted.keyVersion,
+    tokenFingerprint: encrypted.tokenFingerprint,
+    scopes: scopes ?? null,
     lastValidatedAt: new Date(),
   });
 

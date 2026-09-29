@@ -8,3 +8,4 @@ export * from "./types/github.js";
 export * from "./types/realtime.js";
 export * from "./permissions.js";
 export * from "./constants.js";
+export * from "./sanitize.js";

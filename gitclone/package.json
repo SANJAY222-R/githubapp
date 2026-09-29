@@ -6,7 +6,9 @@
     "dev:infra": "docker compose -f infra/docker-compose.yml up -d",
     "db:generate": "pnpm --filter @gitclone/api db:generate",
     "db:migrate": "pnpm --filter @gitclone/api db:migrate",
-    "lint": "pnpm -r typecheck",
+    "db:push": "pnpm --filter @gitclone/api db:push",
+    "db:studio": "pnpm --filter @gitclone/api db:studio",
+    "lint": "pnpm --filter @gitclone/api lint && pnpm -r typecheck",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter @gitclone/api test",
     "build": "pnpm -r build"

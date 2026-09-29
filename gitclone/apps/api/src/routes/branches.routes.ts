@@ -4,33 +4,42 @@ import { zValidator } from "@hono/zod-validator";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { listBranches, createBranch, deleteBranch } from "../services/branches.service.js";
 import { writeAudit } from "../services/audit.service.js";
+import { assertOwnerRepo, validateGitRef } from "../security/validators.js";
+import { GitRefSchema } from "@gitclone/shared";
+import { destructiveRateLimit } from "../middleware/destructiveRateLimit.js";
 
 const app = new Hono();
 
-const CreateBranchSchema = z.object({
-  name: z.string().min(1),
-  from: z.string().optional(),
-  fromSha: z.string().optional(),
-});
+const CreateBranchSchema = z
+  .object({
+    name: GitRefSchema,
+    from: GitRefSchema.optional(),
+    fromSha: z.string().optional(),
+  })
+  .strict();
 
 app.get("/:owner/:repo/branches", requireAuth, async (c) => {
   const user = c.get("user");
   const { owner, repo } = c.req.param();
+  assertOwnerRepo(owner, repo);
   return c.json(await listBranches(user.id, owner, repo));
 });
 
 app.post("/:owner/:repo/branches", requireAuth, zValidator("json", CreateBranchSchema), async (c) => {
   const user = c.get("user");
   const { owner, repo } = c.req.param();
+  assertOwnerRepo(owner, repo);
   const { name, from, fromSha } = c.req.valid("json");
   const result = await createBranch(user.id, owner, repo, name, from, fromSha);
   await writeAudit(user.id, "branch.create", `${owner}/${repo}#${name}`, "success");
   return c.json(result, 201);
 });
 
-app.delete("/:owner/:repo/branches/:name", requireAuth, async (c) => {
+app.delete("/:owner/:repo/branches/:name", destructiveRateLimit, requireAuth, async (c) => {
   const user = c.get("user");
   const { owner, repo, name } = c.req.param();
+  assertOwnerRepo(owner, repo);
+  validateGitRef(name);
   try {
     await deleteBranch(user.id, owner, repo, name);
     await writeAudit(user.id, "branch.delete", `${owner}/${repo}#${name}`, "success");

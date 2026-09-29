@@ -5,6 +5,7 @@ import { sessions } from "../db/schema/sessions.js";
 import { users } from "../db/schema/users.js";
 import { eq, and, gt } from "drizzle-orm";
 import { COOKIE_NAME } from "../config/constants.js";
+import { hashSessionId } from "../services/auth/session.service.js";
 
 export type SessionUser = {
   id: string;
@@ -21,11 +22,16 @@ declare module "hono" {
 }
 
 export const sessionMiddleware = createMiddleware(async (c, next) => {
-  const sessionId = getCookie(c, COOKIE_NAME);
+  const isProd = c.env?.NODE_ENV === "production" || process.env.NODE_ENV === "production";
+  const cookieName = isProd ? `__Host-${COOKIE_NAME}` : COOKIE_NAME;
+  const sessionId = getCookie(c, cookieName) ?? getCookie(c, `__Host-${COOKIE_NAME}`) ?? getCookie(c, COOKIE_NAME);
+
   if (!sessionId) {
     await next();
     return;
   }
+
+  const idHash = hashSessionId(sessionId);
 
   const rows = await db
     .select({
@@ -39,7 +45,7 @@ export const sessionMiddleware = createMiddleware(async (c, next) => {
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
-    .where(and(eq(sessions.id, sessionId), gt(sessions.expiresAt, new Date())))
+    .where(and(eq(sessions.idHash, idHash), gt(sessions.expiresAt, new Date())))
     .limit(1);
 
   const row = rows[0];

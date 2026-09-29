@@ -15,7 +15,11 @@ export const credentials = pgTable("credentials", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   authType: text("auth_type", { enum: ["oauth", "pat"] }).notNull(),
   tokenEnc: text("token_enc").notNull(),
+  dekWrapped: text("dek_wrapped"),
+  keyVersion: integer("key_version").default(1).notNull(),
+  tokenFingerprint: text("token_fingerprint"),
   refreshTokenEnc: text("refresh_token_enc"),
+  refreshTokenDekWrapped: text("refresh_token_dek_wrapped"),
   scopes: text("scopes"),
   expiresAt: timestamp("expires_at"),
   lastValidatedAt: timestamp("last_validated_at"),
@@ -24,8 +28,29 @@ export const credentials = pgTable("credentials", {
 
 export const sessions = pgTable("sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
+  idHash: text("id_hash").notNull().unique(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   expiresAt: timestamp("expires_at").notNull(),
+  rotatedAt: timestamp("rotated_at"),
+  lastStrongAuthAt: timestamp("last_strong_auth_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const oauthStates = pgTable("oauth_states", {
+  state: text("state").primaryKey(),
+  codeVerifier: text("code_verifier").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const confirmTokens = pgTable("confirm_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tokenHash: text("token_hash").notNull().unique(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  action: text("action").notNull(),
+  target: text("target").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -36,6 +61,12 @@ export const auditLog = pgTable("audit_log", {
   target: text("target").notNull(),
   status: text("status", { enum: ["success", "failure"] }).notNull(),
   metadataJson: jsonb("metadata_json"),
+  prevHash: text("prev_hash"),
+  entryHash: text("entry_hash"),
+  ip: text("ip"),
+  userAgent: text("user_agent"),
+  correlationId: text("correlation_id"),
+  confirmationTokenId: text("confirmation_token_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

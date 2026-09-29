@@ -31,6 +31,7 @@ describe("API Integration Tests", () => {
       headers: {
         "content-type": "application/json",
         "x-csrf-token": "1",
+        origin: "http://localhost:5173",
       },
       body: JSON.stringify({ token: "" }),
     });
@@ -42,11 +43,26 @@ describe("API Integration Tests", () => {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        origin: "http://localhost:5173",
       },
     });
     expect(res.status).toBe(403);
-    const body = await res.json() as { error?: string };
+    const body = (await res.json()) as { error?: string };
     expect(body.error).toContain("CSRF");
+  });
+
+  it("POST to mutating endpoint rejects untrusted Origin with 403", async () => {
+    const res = await app.request("/api/auth/disconnect", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-csrf-token": "1",
+        origin: "http://attacker-site.com",
+      },
+    });
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { error?: string };
+    expect(body.error).toContain("Origin");
   });
 
   it("POST /api/webhooks/github rejects invalid HMAC signature with 401", async () => {
@@ -62,16 +78,22 @@ describe("API Integration Tests", () => {
     expect(res.status).toBe(401);
   });
 
-  it("includes security headers in responses", async () => {
-    const res = await app.request("/api/health");
+  it("includes security headers and no-store cache control in responses", async () => {
+    const res = await app.request("/api/me");
     expect(res.headers.get("x-content-type-options")).toBe("nosniff");
     expect(res.headers.get("x-frame-options")).toBe("DENY");
+    expect(res.headers.get("content-security-policy")).toContain("default-src 'none'");
+    expect(res.headers.get("cache-control")).toContain("no-store");
   });
 
-  it("GET /api/auth/oauth/start redirects to GitHub OAuth", async () => {
+  it("GET /api/auth/oauth/start redirects to GitHub OAuth with PKCE parameters", async () => {
     const res = await app.request("/api/auth/oauth/start");
     expect(res.status).toBe(302);
-    expect(res.headers.get("location")).toContain("github.com/login/oauth/authorize");
+    const location = res.headers.get("location") || "";
+    expect(location).toContain("github.com/login/oauth/authorize");
+    expect(location).toContain("code_challenge=");
+    expect(location).toContain("code_challenge_method=S256");
+    expect(location).toContain("state=");
   });
 
   it("GET /api/auth/oauth/callback returns 400 when code is missing", async () => {

@@ -20,14 +20,30 @@ export async function getFile(userId: string, owner: string, repo: string, path:
     const { data } = await retryIdempotent(() =>
       octokit.repos.getContent({ owner, repo, path, ref })
     );
-    if (Array.isArray(data)) throw new Error("Path is a directory");
+    if (Array.isArray(data)) {
+      return {
+        type: "dir" as const,
+        name: path.split("/").pop() || "",
+        path,
+        entries: data.map((item) => ({
+          name: item.name,
+          path: item.path,
+          sha: item.sha,
+          size: item.size,
+          type: item.type === "dir" ? ("tree" as const) : ("blob" as const),
+          downloadUrl: item.download_url,
+        })),
+      };
+    }
     const file = data as {
       name: string; path: string; sha: string; size: number;
-      content: string; encoding: string; download_url: string | null;
+      content?: string; encoding?: string; download_url: string | null;
+      type: string;
     };
     return {
+      type: "file" as const,
       name: file.name, path: file.path, sha: file.sha, size: file.size,
-      content: file.content, encoding: file.encoding, downloadUrl: file.download_url,
+      content: file.content ?? "", encoding: file.encoding ?? "utf-8", downloadUrl: file.download_url,
     };
   } catch (err) {
     throw mapGithubError(err);
