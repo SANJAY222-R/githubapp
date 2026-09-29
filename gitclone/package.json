@@ -11,6 +11,7 @@
     "lint": "pnpm --filter @gitclone/api lint && pnpm -r typecheck",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter @gitclone/api test",
+    "security:smoke": "pnpm --filter @gitclone/api exec tsx ../../scripts/security-smoke.ts",
     "build": "pnpm -r build"
   },
   "devDependencies": {

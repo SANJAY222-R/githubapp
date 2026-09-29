@@ -61,4 +61,9 @@ app.route("/api/ai", aiRoutes);
 
 app.get("/api/health", (c) => c.json({ status: "ok", ts: Date.now() }));
 
+app.get("/.well-known/security.txt", (c) => {
+  const content = `Contact: mailto:security@gitclone.dev\nExpires: 2027-12-31T23:59:59.000Z\nPreferred-Languages: en\nCanonical: https://gitclone.dev/.well-known/security.txt\nPolicy: https://gitclone.dev/security\n`;
+  return c.text(content, 200, { "Content-Type": "text/plain; charset=utf-8" });
+});
+
 export default app;

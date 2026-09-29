@@ -1,0 +1,27 @@
+rules:
+  - id: ban-dangerouslysetinnerhtml
+    message: "Direct use of dangerouslySetInnerHTML is forbidden. Render Markdown using components/ui/Markdown.tsx instead."
+    languages: [typescript, javascript, tsx, jsx]
+    severity: ERROR
+    pattern: dangerouslySetInnerHTML
+    paths:
+      exclude:
+        - "apps/web/src/components/ui/Markdown.tsx"
+
+  - id: ban-eval-and-new-function
+    message: "Dynamic code evaluation via eval() or new Function() is strictly forbidden."
+    languages: [typescript, javascript]
+    severity: ERROR
+    patterns:
+      - pattern-either:
+          - pattern: eval(...)
+          - pattern: new Function(...)
+
+  - id: ban-string-interpolated-sql
+    message: "Raw SQL query with string concatenation detected. Use parameterized queries via Drizzle ORM."
+    languages: [typescript, javascript]
+    severity: ERROR
+    patterns:
+      - pattern-either:
+          - pattern: $DB.execute(`...${...}...`)
+          - pattern: $POOL.query(`...${...}...`)
