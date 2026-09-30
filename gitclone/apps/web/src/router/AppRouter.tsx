@@ -8,6 +8,7 @@ import { NewRepoPage } from "../features/repos/NewRepoPage.js";
 import { RepoDetailPage } from "../features/repos/RepoDetailPage.js";
 import { FileBrowserPage } from "../features/files/FileBrowserPage.js";
 import { BranchesPage } from "../features/branches/BranchesPage.js";
+import { RepoSettingsPage } from "../features/repos/RepoSettingsPage.js";
 import { CommitListPage } from "../features/commits/CommitListPage.js";
 import { CommitDiffPage } from "../features/commits/CommitDiffPage.js";
 import { PullListPage } from "../features/pulls/PullListPage.js";
@@ -53,6 +54,7 @@ export function AppRouter() {
         <Route path="/repos/:owner/:repo" element={<RequireAuth><RepoDetailPage /></RequireAuth>} />
         <Route path="/repos/:owner/:repo/files/*" element={<RequireAuth><FileBrowserPage /></RequireAuth>} />
         <Route path="/repos/:owner/:repo/branches" element={<RequireAuth><BranchesPage /></RequireAuth>} />
+        <Route path="/repos/:owner/:repo/settings" element={<RequireAuth><RepoSettingsPage /></RequireAuth>} />
         <Route path="/repos/:owner/:repo/commits" element={<RequireAuth><CommitListPage /></RequireAuth>} />
         <Route path="/repos/:owner/:repo/commits/:sha" element={<RequireAuth><CommitDiffPage /></RequireAuth>} />
         <Route path="/repos/:owner/:repo/pulls" element={<RequireAuth><PullListPage /></RequireAuth>} />

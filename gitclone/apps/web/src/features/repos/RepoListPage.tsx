@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { http } from "../../lib/http.js";
 import type { Repo } from "@gitclone/shared";
+import { DeleteRepoDialog } from "../../components/dialogs/DeleteRepoDialog.js";
 
 const LANGUAGE_COLORS: Record<string, string> = {
   TypeScript: "#3178c6",
@@ -40,6 +41,8 @@ export function RepoListPage() {
     }
     return true;
   });
+
+  const [repoToDelete, setRepoToDelete] = useState<{ owner: string; repo: string } | null>(null);
 
   const timeAgo = (dateStr?: string) => {
     if (!dateStr) return "recently";
@@ -155,7 +158,7 @@ export function RepoListPage() {
             </div>
           ) : (
             filteredRepos.map((repo) => {
-              const owner = repo.ownerLogin || (repo.fullName ? repo.fullName.split("/")[0] : "owner");
+              const owner: string = repo.ownerLogin || (repo.fullName ? repo.fullName.split("/")[0] || "owner" : "owner");
               const stars = repo.stargazersCount ?? 0;
               const forks = repo.forksCount ?? 0;
 
@@ -207,9 +210,19 @@ export function RepoListPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-start md:self-center">
-                    <button className="h-7 px-2.5 bg-canvas-inset hover:bg-canvas-subtle text-fg-default border border-border-default rounded-md text-[12px] font-medium flex items-center gap-1.5 transition-colors">
-                      <span className="material-symbols-outlined text-[15px] text-fg-muted">star</span>
-                      <span>Star</span>
+                    <Link
+                      to={`/repos/${owner}/${repo.name}/settings`}
+                      className="h-7 w-7 rounded-md bg-canvas-inset hover:bg-canvas-subtle text-fg-muted hover:text-fg-default border border-border-default flex items-center justify-center transition-colors text-decoration-none"
+                      title="Settings & Danger Zone"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">settings</span>
+                    </Link>
+                    <button
+                      onClick={() => setRepoToDelete({ owner, repo: repo.name })}
+                      className="h-7 w-7 rounded-md bg-canvas-inset hover:bg-danger-subtle text-fg-muted hover:text-danger-fg border border-border-default hover:border-danger-fg/40 flex items-center justify-center transition-colors"
+                      title="Delete repository"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">delete</span>
                     </button>
                   </div>
                 </div>
@@ -217,6 +230,16 @@ export function RepoListPage() {
             })
           )}
         </div>
+      )}
+
+      {/* Delete Repository Modal */}
+      {repoToDelete && (
+        <DeleteRepoDialog
+          owner={repoToDelete.owner}
+          repo={repoToDelete.repo}
+          isOpen={true}
+          onClose={() => setRepoToDelete(null)}
+        />
       )}
     </div>
   );

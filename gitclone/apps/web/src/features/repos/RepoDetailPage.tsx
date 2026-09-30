@@ -4,6 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { http } from "../../lib/http.js";
 import { RepoHeader } from "../../components/RepoHeader.js";
 import { Markdown } from "../../components/ui/Markdown.js";
+import { DeleteFolderDialog } from "../../components/dialogs/DeleteFolderDialog.js";
+import { DeleteFileDialog } from "../../components/dialogs/DeleteFileDialog.js";
+import { DeleteRepoDialog } from "../../components/dialogs/DeleteRepoDialog.js";
 
 interface RawTreeItem {
   path: string;
@@ -105,6 +108,9 @@ export function RepoDetailPage() {
   const [cloneOpen, setCloneOpen] = useState(false);
   const [cloneTab, setCloneTab] = useState<"https" | "ssh">("https");
   const [copied, setCopied] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  const [fileToDelete, setFileToDelete] = useState<{ path: string; sha: string } | null>(null);
+  const [repoDeleteOpen, setRepoDeleteOpen] = useState(false);
 
   // 1. Fetch Repository Metadata
   const { data: repoData } = useQuery<RepoDetails>({
@@ -440,13 +446,28 @@ export function RepoDetailPage() {
                             {entry.name}
                           </Link>
                         </div>
-                        <div className="w-2/5 truncate pr-4">
+                        <div className="w-2/5 truncate pr-4 flex items-center justify-between">
                           <span className="font-mono text-[11px] text-fg-muted group-hover:text-fg-default transition-colors truncate block">
                             {entry.type === "dir" ? "directory" : `${entry.size} bytes`}
                           </span>
                         </div>
-                        <div className="w-1/5 text-right font-mono text-[11px] text-fg-muted shrink-0">
-                          {entry.sha ? entry.sha.slice(0, 7) : ""}
+                        <div className="w-1/5 text-right font-mono text-[11px] text-fg-muted shrink-0 flex items-center justify-end gap-2">
+                          <span>{entry.sha ? entry.sha.slice(0, 7) : ""}</span>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (entry.type === "dir") {
+                                setFolderToDelete(entry.path);
+                              } else {
+                                setFileToDelete({ path: entry.path, sha: entry.sha });
+                              }
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-danger-subtle text-fg-muted hover:text-danger-fg transition-all"
+                            title={entry.type === "dir" ? "Delete directory" : "Delete file"}
+                          >
+                            <span className="material-symbols-outlined text-[15px]">delete</span>
+                          </button>
                         </div>
                       </div>
                     ))
@@ -517,9 +538,68 @@ export function RepoDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* Danger Zone Actions Card */}
+            <div className="rounded-lg bg-canvas-subtle border border-border-default p-4 flex flex-col gap-3 shadow-sm">
+              <h3 className="text-[14px] font-semibold text-fg-default flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-fg-muted">admin_panel_settings</span>
+                <span>Management</span>
+              </h3>
+              <div className="flex flex-col gap-2 pt-1">
+                <Link
+                  to={`/repos/${owner}/${repo}/settings`}
+                  className="h-8 px-3 rounded-md bg-canvas-inset hover:bg-canvas-subtle border border-border-default text-fg-default font-medium text-[12px] flex items-center justify-center gap-1.5 transition-colors text-decoration-none"
+                >
+                  <span className="material-symbols-outlined text-[15px]">settings</span>
+                  <span>Repository Settings</span>
+                </Link>
+                <button
+                  onClick={() => setRepoDeleteOpen(true)}
+                  className="h-8 px-3 rounded-md bg-canvas-inset hover:bg-danger-subtle border border-border-default hover:border-danger-fg/40 text-danger-fg font-medium text-[12px] flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[15px]">delete_forever</span>
+                  <span>Delete repository</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Delete Folder Dialog */}
+      {folderToDelete && (
+        <DeleteFolderDialog
+          owner={owner}
+          repo={repo}
+          folderPath={folderToDelete}
+          isOpen={true}
+          onClose={() => setFolderToDelete(null)}
+          branch={activeBranch}
+        />
+      )}
+
+      {/* Delete File Dialog */}
+      {fileToDelete && (
+        <DeleteFileDialog
+          owner={owner}
+          repo={repo}
+          filePath={fileToDelete.path}
+          fileSha={fileToDelete.sha}
+          isOpen={true}
+          onClose={() => setFileToDelete(null)}
+          branch={activeBranch}
+        />
+      )}
+
+      {/* Delete Repo Dialog */}
+      <DeleteRepoDialog
+        owner={owner}
+        repo={repo}
+        isOpen={repoDeleteOpen}
+        onClose={() => setRepoDeleteOpen(false)}
+        commitsCount={commitsData?.length}
+        branchesCount={branches?.length}
+      />
     </div>
   );
 }

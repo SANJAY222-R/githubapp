@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { http } from "../../lib/http.js";
 import { RepoHeader } from "../../components/RepoHeader.js";
 import { Markdown } from "../../components/ui/Markdown.js";
+import { DeleteFolderDialog } from "../../components/dialogs/DeleteFolderDialog.js";
+import { DeleteFileDialog } from "../../components/dialogs/DeleteFileDialog.js";
 
 interface RawTreeItem {
   path: string;
@@ -44,6 +46,8 @@ export function FileBrowserPage() {
   const { owner, repo, "*": rawFilePath } = useParams<{ owner: string; repo: string; "*": string }>();
   const [copied, setCopied] = useState(false);
   const [viewRaw, setViewRaw] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  const [fileToDelete, setFileToDelete] = useState<{ path: string; sha?: string } | null>(null);
 
   const fullName = `${owner}/${repo}`;
   const filePath = (rawFilePath ?? "").replace(/^\/+/, "");
@@ -234,8 +238,23 @@ export function FileBrowserPage() {
                     <div className="w-1/4 truncate text-right pr-4 font-mono text-[11px] text-fg-muted">
                       {isDir ? "directory" : entry.size ? `${entry.size} bytes` : ""}
                     </div>
-                    <div className="w-1/4 text-right font-mono text-[11px] text-fg-muted shrink-0">
-                      {entry.sha ? entry.sha.slice(0, 7) : ""}
+                    <div className="w-1/4 text-right font-mono text-[11px] text-fg-muted shrink-0 flex items-center justify-end gap-2">
+                      <span>{entry.sha ? entry.sha.slice(0, 7) : ""}</span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (isDir) {
+                            setFolderToDelete(entryPath);
+                          } else {
+                            setFileToDelete({ path: entryPath, sha: entry.sha });
+                          }
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-danger-subtle text-fg-muted hover:text-danger-fg transition-all"
+                        title={isDir ? "Delete directory" : "Delete file"}
+                      >
+                        <span className="material-symbols-outlined text-[15px]">delete</span>
+                      </button>
                     </div>
                   </div>
                 );
@@ -289,6 +308,15 @@ export function FileBrowserPage() {
                         </span>
                         <span>{copied ? "Copied" : "Copy"}</span>
                       </button>
+
+                      <button
+                        onClick={() => setFileToDelete({ path: filePath, sha: fileData.sha })}
+                        className="h-7 px-2.5 rounded-md bg-canvas-default border border-border-default hover:bg-danger-subtle hover:border-danger-fg/40 text-fg-muted hover:text-danger-fg text-[12px] font-medium flex items-center gap-1.5 transition-colors"
+                        title="Delete this file"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">delete</span>
+                        <span>Delete</span>
+                      </button>
                     </div>
                   </div>
 
@@ -317,6 +345,29 @@ export function FileBrowserPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Folder Dialog */}
+      {folderToDelete && (
+        <DeleteFolderDialog
+          owner={owner}
+          repo={repo}
+          folderPath={folderToDelete}
+          isOpen={true}
+          onClose={() => setFolderToDelete(null)}
+        />
+      )}
+
+      {/* Delete File Dialog */}
+      {fileToDelete && (
+        <DeleteFileDialog
+          owner={owner}
+          repo={repo}
+          filePath={fileToDelete.path}
+          fileSha={fileToDelete.sha}
+          isOpen={true}
+          onClose={() => setFileToDelete(null)}
+        />
+      )}
     </div>
   );
 }

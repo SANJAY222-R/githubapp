@@ -17,6 +17,7 @@ export function RepoHeader({ owner, repo, isPrivate = false }: RepoHeaderProps) 
     { label: "Pull requests", path: `${basePath}/pulls`, icon: "call_merge" },
     { label: "Commits", path: `${basePath}/commits`, icon: "commit" },
     { label: "Branches", path: `${basePath}/branches`, icon: "fork_right" },
+    { label: "Settings", path: `${basePath}/settings`, icon: "settings" },
   ];
 
   return (
