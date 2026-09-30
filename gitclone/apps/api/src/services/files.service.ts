@@ -8,8 +8,12 @@ export async function getTree(userId: string, owner: string, repo: string, ref: 
     const { data } = await retryIdempotent(() =>
       octokit.git.getTree({ owner, repo, tree_sha: ref, recursive: "1" })
     );
-    return data.tree;
-  } catch (err) {
+    return data.tree ?? [];
+  } catch (err: unknown) {
+    const e = err as { status?: number; message?: string };
+    if (e?.status === 404 && (e?.message?.toLowerCase().includes("empty") || e?.message?.toLowerCase().includes("tree not found"))) {
+      return [];
+    }
     throw mapGithubError(err);
   }
 }
