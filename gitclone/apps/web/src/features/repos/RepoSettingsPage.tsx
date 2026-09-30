@@ -55,6 +55,8 @@ export function RepoSettingsPage() {
 
   if (!owner || !repo) return null;
 
+  const [visibilityModalOpen, setVisibilityModalOpen] = useState(false);
+
   return (
     <div className="flex flex-col min-h-full">
       <RepoHeader owner={owner} repo={repo} isPrivate={repoData?.private} />
@@ -139,18 +141,30 @@ export function RepoSettingsPage() {
               <div className="p-5 flex flex-col divide-y divide-border-default">
                 {/* Change Visibility */}
                 <div className="py-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="text-[13px] font-semibold text-fg-default">Change repository visibility</div>
-                    <div className="text-[12px] text-fg-muted mt-0.5">
+                  <div className="flex flex-col gap-0.5">
+                    <div className="text-[13px] font-semibold text-fg-default flex items-center gap-1.5">
+                      <span>Change repository visibility</span>
+                      <span className={`font-mono text-[10px] px-2 py-0.2 rounded-full border ${
+                        repoData?.private
+                          ? "bg-warning-subtle border-warning-fg/30 text-warning-fg"
+                          : "bg-canvas-inset border-border-default text-fg-muted"
+                      }`}>
+                        {repoData?.private ? "Private" : "Public"}
+                      </span>
+                    </div>
+                    <div className="text-[12px] text-fg-muted">
                       This repository is currently <strong className="text-fg-default">{repoData?.private ? "Private" : "Public"}</strong>.
                     </div>
                   </div>
                   <button
-                    onClick={() => updateMutation.mutate({ private: !repoData?.private })}
+                    onClick={() => setVisibilityModalOpen(true)}
                     disabled={updateMutation.isPending}
-                    className="h-8 px-3 rounded-md bg-canvas-inset hover:bg-canvas-subtle border border-border-default text-fg-default font-medium text-[12px] transition-colors self-start sm:self-auto"
+                    className="h-8 px-3 rounded-md bg-canvas-inset hover:bg-canvas-subtle border border-border-default text-fg-default font-medium text-[12px] transition-colors self-start sm:self-auto flex items-center gap-1.5"
                   >
-                    Make {repoData?.private ? "Public" : "Private"}
+                    <span className="material-symbols-outlined text-[15px] text-fg-muted">
+                      {repoData?.private ? "public" : "lock"}
+                    </span>
+                    <span>Make {repoData?.private ? "Public" : "Private"}</span>
                   </button>
                 </div>
 
@@ -175,6 +189,68 @@ export function RepoSettingsPage() {
           </div>
         )}
       </div>
+
+      {/* Visibility Change Modal */}
+      {visibilityModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="relative w-full max-w-[520px] bg-canvas-overlay border border-border-default rounded-xl shadow-overlay overflow-hidden flex flex-col my-auto transition-all animate-in fade-in zoom-in-95 duration-150">
+            <div className="h-1.5 w-full bg-accent-emphasis" />
+            <div className="px-6 pt-5 pb-4 flex items-start justify-between gap-4 border-b border-border-default">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-canvas-inset border border-border-default flex items-center justify-center shrink-0 text-accent-fg">
+                  <span className="material-symbols-outlined text-[20px]">
+                    {repoData?.private ? "public" : "lock"}
+                  </span>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <h2 className="text-[17px] font-semibold text-fg-default tracking-tight">
+                    Make repository {repoData?.private ? "public" : "private"}
+                  </h2>
+                  <span className="font-mono text-[12px] text-fg-muted truncate">{fullName}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setVisibilityModalOpen(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-fg-muted hover:text-fg-default hover:bg-canvas-subtle transition-colors shrink-0"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <div className="px-6 py-5 flex flex-col gap-4">
+              <div className="p-3.5 rounded-lg bg-canvas-inset border border-border-default text-fg-default text-[13px] flex items-start gap-2.5">
+                <span className="material-symbols-outlined text-[18px] text-accent-fg shrink-0 mt-0.5">info</span>
+                <p className="text-[12px] text-fg-muted leading-relaxed">
+                  {repoData?.private
+                    ? "Making this repository public will allow anyone on the internet to view the code, commit history, branches, releases, and issues."
+                    : "Making this repository private will restrict access exclusively to you and authorized collaborators."}
+                </p>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-canvas-subtle border-t border-border-default flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setVisibilityModalOpen(false)}
+                className="h-9 px-4 rounded-lg bg-canvas-inset hover:bg-canvas-subtle border border-border-default text-fg-default font-medium text-[13px] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={updateMutation.isPending}
+                onClick={() => {
+                  updateMutation.mutate({ private: !repoData?.private });
+                  setVisibilityModalOpen(false);
+                }}
+                className="h-9 px-4 rounded-lg bg-accent-emphasis hover:brightness-110 text-white font-medium text-[13px] flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <span>{updateMutation.isPending ? "Updating..." : `Make ${repoData?.private ? "Public" : "Private"}`}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       <DeleteRepoDialog

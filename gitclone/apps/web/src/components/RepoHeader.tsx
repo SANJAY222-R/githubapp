@@ -1,5 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { http } from "../lib/http.js";
 
 interface RepoHeaderProps {
   owner: string;
@@ -7,9 +9,18 @@ interface RepoHeaderProps {
   isPrivate?: boolean;
 }
 
-export function RepoHeader({ owner, repo, isPrivate = false }: RepoHeaderProps) {
+export function RepoHeader({ owner, repo, isPrivate }: RepoHeaderProps) {
   const location = useLocation();
   const basePath = `/repos/${owner}/${repo}`;
+
+  const { data: repoData } = useQuery<{ private?: boolean }>({
+    queryKey: ["repo", owner, repo],
+    queryFn: () => http.get<{ private?: boolean }>(`/repos/${owner}/${repo}`),
+    enabled: isPrivate === undefined && !!owner && !!repo,
+    staleTime: 30000,
+  });
+
+  const effectiveIsPrivate = isPrivate !== undefined ? isPrivate : repoData?.private ?? false;
 
   const tabs = [
     { label: "Code", path: basePath, icon: "code", exact: true },
@@ -25,7 +36,9 @@ export function RepoHeader({ owner, repo, isPrivate = false }: RepoHeaderProps) 
       {/* Top Repo Identification Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-3">
         <div className="flex items-center gap-2.5 flex-wrap">
-          <span className="material-symbols-outlined text-[22px] text-accent-fg">folder_open</span>
+          <span className="material-symbols-outlined text-[22px] text-accent-fg">
+            {effectiveIsPrivate ? "lock" : "folder_open"}
+          </span>
           <div className="flex items-baseline gap-1 text-[16px]">
             <Link to="/" className="text-accent-fg hover:underline font-normal">
               {owner}
@@ -35,9 +48,17 @@ export function RepoHeader({ owner, repo, isPrivate = false }: RepoHeaderProps) 
               {repo}
             </Link>
           </div>
-          <span className="px-2 py-0.5 rounded-full bg-canvas-inset border border-border-default text-fg-muted font-mono text-[11px] font-medium tracking-wide">
-            {isPrivate ? "Private" : "Public"}
-          </span>
+          {effectiveIsPrivate ? (
+            <span className="px-2 py-0.5 rounded-full bg-warning-subtle border border-warning-fg/30 text-warning-fg font-mono text-[11px] font-medium tracking-wide flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]">lock</span>
+              <span>Private</span>
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 rounded-full bg-canvas-inset border border-border-default text-fg-muted font-mono text-[11px] font-medium tracking-wide flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px] text-accent-fg">public</span>
+              <span>Public</span>
+            </span>
+          )}
         </div>
 
         {/* Quick action buttons */}

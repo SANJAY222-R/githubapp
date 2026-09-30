@@ -27,6 +27,9 @@ export function RepoListPage() {
     queryFn: () => http.get<Repo[]>("/repos"),
   });
 
+  const publicCount = (repos || []).filter((r) => !r.private).length;
+  const privateCount = (repos || []).filter((r) => Boolean(r.private)).length;
+
   const filteredRepos = (repos || []).filter((r) => {
     if (filterType === "public" && r.private) return false;
     if (filterType === "private" && !r.private) return false;
@@ -93,33 +96,38 @@ export function RepoListPage() {
         <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => setFilterType("all")}
-            className={`h-7 px-2.5 rounded-md text-[12px] font-medium transition-colors border ${
+            className={`h-7 px-2.5 rounded-md text-[12px] font-medium transition-colors border flex items-center gap-1.5 ${
               filterType === "all"
                 ? "bg-canvas-inset border-border-default text-fg-default font-semibold"
                 : "border-transparent text-fg-muted hover:text-fg-default"
             }`}
           >
-            All
+            <span>All</span>
+            <span className="font-mono text-[10px] text-fg-muted">({repos?.length ?? 0})</span>
           </button>
           <button
             onClick={() => setFilterType("public")}
-            className={`h-7 px-2.5 rounded-md text-[12px] font-medium transition-colors border ${
+            className={`h-7 px-2.5 rounded-md text-[12px] font-medium transition-colors border flex items-center gap-1.5 ${
               filterType === "public"
                 ? "bg-canvas-inset border-border-default text-fg-default font-semibold"
                 : "border-transparent text-fg-muted hover:text-fg-default"
             }`}
           >
-            Public
+            <span className="material-symbols-outlined text-[13px] text-accent-fg">public</span>
+            <span>Public</span>
+            <span className="font-mono text-[10px] text-fg-muted">({publicCount})</span>
           </button>
           <button
             onClick={() => setFilterType("private")}
-            className={`h-7 px-2.5 rounded-md text-[12px] font-medium transition-colors border ${
+            className={`h-7 px-2.5 rounded-md text-[12px] font-medium transition-colors border flex items-center gap-1.5 ${
               filterType === "private"
                 ? "bg-canvas-inset border-border-default text-fg-default font-semibold"
                 : "border-transparent text-fg-muted hover:text-fg-default"
             }`}
           >
-            Private
+            <span className="material-symbols-outlined text-[13px] text-warning-fg">lock</span>
+            <span>Private</span>
+            <span className="font-mono text-[10px] text-fg-muted">({privateCount})</span>
           </button>
         </div>
       </div>
@@ -176,9 +184,17 @@ export function RepoListPage() {
                         <span className="text-fg-muted font-normal">{owner} /</span>
                         <span>{repo.name}</span>
                       </Link>
-                      <span className="font-mono text-[10px] px-2 py-0.2 rounded-full border border-border-default bg-canvas-inset text-fg-muted">
-                        {repo.private ? "Private" : "Public"}
-                      </span>
+                      {repo.private ? (
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-full border border-warning-fg/30 bg-warning-subtle text-warning-fg flex items-center gap-1 font-medium">
+                          <span className="material-symbols-outlined text-[12px]">lock</span>
+                          <span>Private</span>
+                        </span>
+                      ) : (
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded-full border border-border-default bg-canvas-inset text-fg-muted flex items-center gap-1 font-medium">
+                          <span className="material-symbols-outlined text-[12px] text-accent-fg">public</span>
+                          <span>Public</span>
+                        </span>
+                      )}
                     </div>
 
                     {repo.description && (

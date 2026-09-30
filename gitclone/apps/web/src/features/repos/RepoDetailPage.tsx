@@ -241,7 +241,7 @@ export function RepoDetailPage() {
 
   return (
     <div className="flex flex-col min-h-full">
-      <RepoHeader owner={owner} repo={repo} />
+      <RepoHeader owner={owner} repo={repo} isPrivate={repoData?.private} />
 
       <div className="p-6 max-w-[1520px] w-full mx-auto flex flex-col gap-5">
         {/* Controls Bar */}
@@ -532,6 +532,21 @@ export function RepoDetailPage() {
                     <span className="font-mono text-accent-fg font-semibold">{repoData.language}</span>
                   </div>
                 )}
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px] text-fg-muted">
+                      {repoData?.private ? "lock" : "public"}
+                    </span>
+                    <span>Visibility</span>
+                  </span>
+                  <span className={`font-mono text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                    repoData?.private
+                      ? "bg-warning-subtle border-warning-fg/30 text-warning-fg"
+                      : "bg-canvas-inset border-border-default text-fg-default"
+                  }`}>
+                    {repoData?.private ? "Private" : "Public"}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2 pt-2 border-t border-border-default text-[11px]">
                   <span className="material-symbols-outlined text-[15px] text-success-fg">lock</span>
                   <span>Zero-Knowledge Decryption</span>

@@ -73,22 +73,23 @@ export async function patchRepo(
 }
 
 function mapRepo(data: Record<string, unknown>) {
+  const isPrivate = Boolean(data["private"] ?? (data["visibility"] === "private"));
   return {
     id: data["id"] as number,
     name: data["name"] as string,
     fullName: data["full_name"] as string,
     description: data["description"] as string | null,
-    private: data["private"] as boolean,
-    fork: data["fork"] as boolean,
-    archived: data["archived"] as boolean,
-    stargazersCount: data["stargazers_count"] as number,
-    forksCount: data["forks_count"] as number,
+    private: isPrivate,
+    fork: Boolean(data["fork"]),
+    archived: Boolean(data["archived"]),
+    stargazersCount: Number(data["stargazers_count"] ?? 0),
+    forksCount: Number(data["forks_count"] ?? 0),
     language: data["language"] as string | null,
-    defaultBranch: data["default_branch"] as string,
-    updatedAt: data["updated_at"] as string,
-    htmlUrl: data["html_url"] as string,
-    cloneUrl: data["clone_url"] as string,
-    ownerLogin: (data["owner"] as { login: string }).login,
-    ownerAvatarUrl: (data["owner"] as { avatar_url: string }).avatar_url,
+    defaultBranch: (data["default_branch"] as string) || "main",
+    updatedAt: (data["updated_at"] as string) || new Date().toISOString(),
+    htmlUrl: (data["html_url"] as string) || "",
+    cloneUrl: (data["clone_url"] as string) || "",
+    ownerLogin: ((data["owner"] as { login?: string })?.login) || (typeof data["full_name"] === "string" ? (data["full_name"] as string).split("/")[0] : "owner"),
+    ownerAvatarUrl: ((data["owner"] as { avatar_url?: string })?.avatar_url) || "",
   };
 }
