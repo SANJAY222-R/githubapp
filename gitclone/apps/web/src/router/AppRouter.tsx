@@ -1,5 +1,7 @@
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider.js";
+import { AppLayout } from "../components/AppLayout.js";
 import { LoginPage } from "../features/auth/LoginPage.js";
 import { RepoListPage } from "../features/repos/RepoListPage.js";
 import { NewRepoPage } from "../features/repos/NewRepoPage.js";
@@ -17,50 +19,33 @@ import { NewIssuePage } from "../features/issues/NewIssuePage.js";
 import { NotificationsPage } from "../features/notifications/NotificationsPage.js";
 import { AuditLogPage } from "../features/audit/AuditLogPage.js";
 import { AiToolsPage } from "../features/ai/AiToolsPage.js";
-import { http } from "../lib/http.js";
-import { queryClient } from "../lib/queryClient.js";
-import { wipeClientData } from "../lib/persister.js";
-
-function NavBar() {
-  const { user, refetch } = useAuth();
-  const logout = async () => {
-    try {
-      await http.post("/auth/disconnect");
-    } finally {
-      wipeClientData();
-      queryClient.clear();
-      refetch();
-    }
-  };
-  return (
-    <nav style={{ background: "#24292f", color: "#fff", padding: "10px 24px", display: "flex", alignItems: "center", gap: 20 }}>
-      <Link to="/" style={{ color: "#fff", fontWeight: 700, textDecoration: "none", fontSize: 18 }}>GitClone</Link>
-      <Link to="/notifications" style={{ color: "#ccc", textDecoration: "none" }}>Notifications</Link>
-      <Link to="/audit" style={{ color: "#ccc", textDecoration: "none" }}>Audit</Link>
-      <Link to="/ai" style={{ color: "#ccc", textDecoration: "none" }}>AI</Link>
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
-        {user && <span style={{ fontSize: 13 }}>{user.login}</span>}
-        <button onClick={logout} style={{ background: "none", border: "1px solid #555", color: "#ccc", padding: "4px 12px", borderRadius: 4, cursor: "pointer" }}>Sign out</button>
-      </div>
-    </nav>
-  );
-}
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <div style={{ padding: 40, textAlign: "center" }}>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-canvas-default text-fg-muted flex items-center justify-center font-mono text-[13px]">
+        Loading application state...
+      </div>
+    );
+  }
   if (!user) return <Navigate to="/login" replace />;
-  return <>{children}</>;
+  return <AppLayout>{children}</AppLayout>;
 }
 
 export function AppRouter() {
   const { user, loading } = useAuth();
 
-  if (loading) return <div style={{ padding: 40, textAlign: "center" }}>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-canvas-default text-fg-muted flex items-center justify-center font-mono text-[13px]">
+        Loading application state...
+      </div>
+    );
+  }
 
   return (
-    <BrowserRouter>
-      {user && <NavBar />}
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/" element={<RequireAuth><RepoListPage /></RequireAuth>} />

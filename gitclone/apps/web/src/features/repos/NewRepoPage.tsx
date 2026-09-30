@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { http } from "../../lib/http.js";
@@ -20,27 +20,144 @@ export function NewRepoPage() {
   });
 
   return (
-    <div style={{ maxWidth: 640, margin: "40px auto", padding: 24 }}>
-      <h1>Create new repository</h1>
-      <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}>
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", marginBottom: 4 }}>Name *</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} required style={{ width: "100%", padding: "6px 12px", boxSizing: "border-box" }} />
+    <div className="p-6 max-w-2xl mx-auto flex flex-col gap-6">
+      <div className="pb-2 border-b border-border-default">
+        <h1 className="text-[20px] font-semibold text-fg-default tracking-tight">Create a new repository</h1>
+        <p className="text-[13px] text-fg-muted mt-0.5">
+          A repository contains all project files, AST packfiles, and revisions history.
+        </p>
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (name.trim()) mutation.mutate();
+        }}
+        className="bg-canvas-subtle border border-border-default rounded-xl p-6 shadow-sm flex flex-col gap-5"
+      >
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-fg-default">
+            Repository name <span className="text-danger-fg">*</span>
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. distributed-kv-store"
+            required
+            className="h-8 px-3 bg-canvas-inset border border-border-default rounded-md font-mono text-[12px] text-fg-default placeholder:text-fg-muted focus:outline-none focus:border-accent-emphasis"
+          />
+          <p className="text-[11px] text-fg-muted">
+            Great repository names are short and memorable.
+          </p>
         </div>
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", marginBottom: 4 }}>Description</label>
-          <input value={description} onChange={(e) => setDescription(e.target.value)} style={{ width: "100%", padding: "6px 12px", boxSizing: "border-box" }} />
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-fg-default">
+            Description <span className="text-fg-muted font-normal text-[12px]">(optional)</span>
+          </label>
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Short summary of the project..."
+            className="h-8 px-3 bg-canvas-inset border border-border-default rounded-md text-[13px] text-fg-default placeholder:text-fg-muted focus:outline-none focus:border-accent-emphasis"
+          />
         </div>
-        <div style={{ marginBottom: 16 }}>
-          <label><input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} /> Private</label>
+
+        {/* Public vs Private Radio Choice Cards */}
+        <div className="flex flex-col gap-2 pt-2 border-t border-border-default">
+          <label
+            onClick={() => setIsPrivate(false)}
+            className={`p-3 rounded-lg border flex items-start gap-3 cursor-pointer transition-colors ${
+              !isPrivate
+                ? "bg-canvas-inset border-accent-emphasis/60"
+                : "bg-canvas-subtle border-border-default hover:bg-canvas-inset/50"
+            }`}
+          >
+            <input
+              type="radio"
+              name="visibility"
+              checked={!isPrivate}
+              onChange={() => setIsPrivate(false)}
+              className="mt-1 accent-accent-emphasis"
+            />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[13px] font-semibold text-fg-default flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-accent-fg">public</span>
+                Public
+              </span>
+              <span className="text-[12px] text-fg-muted">
+                Anyone on the internet can see this repository. You choose who can commit.
+              </span>
+            </div>
+          </label>
+
+          <label
+            onClick={() => setIsPrivate(true)}
+            className={`p-3 rounded-lg border flex items-start gap-3 cursor-pointer transition-colors ${
+              isPrivate
+                ? "bg-canvas-inset border-accent-emphasis/60"
+                : "bg-canvas-subtle border-border-default hover:bg-canvas-inset/50"
+            }`}
+          >
+            <input
+              type="radio"
+              name="visibility"
+              checked={isPrivate}
+              onChange={() => setIsPrivate(true)}
+              className="mt-1 accent-accent-emphasis"
+            />
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[13px] font-semibold text-fg-default flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-attention-fg">lock</span>
+                Private
+              </span>
+              <span className="text-[12px] text-fg-muted">
+                You choose who can see and commit to this repository.
+              </span>
+            </div>
+          </label>
         </div>
-        <div style={{ marginBottom: 24 }}>
-          <label><input type="checkbox" checked={autoInit} onChange={(e) => setAutoInit(e.target.checked)} /> Initialize with README</label>
+
+        {/* Initialize with README */}
+        <div className="pt-2 border-t border-border-default">
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={autoInit}
+              onChange={(e) => setAutoInit(e.target.checked)}
+              className="w-4 h-4 rounded bg-canvas-default border-border-default accent-accent-emphasis"
+            />
+            <div className="flex flex-col">
+              <span className="text-[13px] font-medium text-fg-default">Initialize with a README</span>
+              <span className="text-[11px] text-fg-muted">This allows you to immediately clone the repository to your computer.</span>
+            </div>
+          </label>
         </div>
-        {mutation.error && <p style={{ color: "#d73a49" }}>{(mutation.error as Error).message}</p>}
-        <button type="submit" disabled={mutation.isPending || !name} style={{ padding: "8px 20px", background: "#2da44e", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}>
-          {mutation.isPending ? "Creating..." : "Create repository"}
-        </button>
+
+        {mutation.isError && (
+          <div className="p-3 bg-danger-subtle border border-danger-fg/30 text-danger-fg text-[12px] rounded-md">
+            {(mutation.error as Error).message}
+          </div>
+        )}
+
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-default">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="h-8 px-3 rounded-md border border-border-default text-fg-muted hover:text-fg-default text-[12px]"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={mutation.isPending || !name.trim()}
+            className="h-8 px-4 bg-success-emphasis hover:brightness-110 disabled:opacity-50 text-white font-medium text-[12px] rounded-md shadow-sm transition-all"
+          >
+            {mutation.isPending ? "Creating repository..." : "Create repository"}
+          </button>
+        </div>
       </form>
     </div>
   );

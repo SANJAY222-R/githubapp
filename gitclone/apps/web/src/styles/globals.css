@@ -1,0 +1,152 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+@layer base {
+  :root,
+  [data-theme="dark"] {
+    color-scheme: dark;
+
+    /* Canvas / Surfaces */
+    --color-canvas-default: #0d1117;
+    --color-canvas-subtle: #161b22;
+    --color-canvas-inset: #21262d;
+    --color-canvas-overlay: #161b22;
+
+    /* Borders */
+    --color-border-default: #30363d;
+    --color-border-muted: #21262d;
+    --color-border-subtle: #1b1f24;
+    --color-border-accent: #58a6ff;
+
+    /* Typography / Foregrounds */
+    --color-fg-default: #f0f6fc;
+    --color-fg-muted: #8b949e;
+    --color-fg-subtle: #6e7681;
+    --color-fg-on-emphasis: #ffffff;
+
+    /* Accent & Brand */
+    --color-accent-fg: #58a6ff;
+    --color-accent-emphasis: #1f6feb;
+    --color-accent-muted: rgba(56, 139, 253, 0.4);
+    --color-accent-subtle: rgba(56, 139, 253, 0.15);
+
+    /* Success / Open */
+    --color-success-fg: #3fb950;
+    --color-success-emphasis: #238636;
+    --color-success-muted: rgba(46, 160, 67, 0.4);
+    --color-success-subtle: rgba(46, 160, 67, 0.15);
+
+    /* Attention / Warning / Draft */
+    --color-attention-fg: #d29922;
+    --color-attention-emphasis: #9e6a03;
+    --color-attention-muted: rgba(187, 128, 9, 0.4);
+    --color-attention-subtle: rgba(187, 128, 9, 0.15);
+
+    /* Danger / Closed / Error */
+    --color-danger-fg: #f85149;
+    --color-danger-emphasis: #da3633;
+    --color-danger-muted: rgba(248, 81, 73, 0.4);
+    --color-danger-subtle: rgba(248, 81, 73, 0.15);
+
+    /* Merged State */
+    --color-merged-fg: #a371f7;
+    --color-merged-emphasis: #8957e5;
+    --color-merged-muted: rgba(163, 113, 247, 0.4);
+    --color-merged-subtle: rgba(163, 113, 247, 0.15);
+
+    /* Unified Diff Tokens */
+    --color-diff-add-bg: rgba(46, 160, 67, 0.15);
+    --color-diff-add-fg: #3fb950;
+    --color-diff-add-line-num: rgba(63, 185, 80, 0.3);
+    --color-diff-delete-bg: rgba(248, 81, 73, 0.15);
+    --color-diff-delete-fg: #f85149;
+    --color-diff-delete-line-num: rgba(248, 81, 73, 0.3);
+    --color-diff-hunk-bg: rgba(56, 139, 253, 0.1);
+    --color-diff-hunk-fg: #79c0ff;
+
+    /* Focus & Shadows */
+    --shadow-overlay: 0 8px 24px rgba(1, 4, 9, 0.75);
+    --ring-focus: #58a6ff;
+  }
+
+  [data-theme="light"] {
+    color-scheme: light;
+
+    /* Canvas / Surfaces */
+    --color-canvas-default: #ffffff;
+    --color-canvas-subtle: #f6f8fa;
+    --color-canvas-inset: #eaeef2;
+    --color-canvas-overlay: #ffffff;
+
+    /* Borders */
+    --color-border-default: #d0d7de;
+    --color-border-muted: #d8dee4;
+    --color-border-subtle: #e1e4e8;
+    --color-border-accent: #0969da;
+
+    /* Typography / Foregrounds */
+    --color-fg-default: #24292f;
+    --color-fg-muted: #57606a;
+    --color-fg-subtle: #6e7781;
+    --color-fg-on-emphasis: #ffffff;
+
+    /* Accent & Brand */
+    --color-accent-fg: #0969da;
+    --color-accent-emphasis: #0969da;
+    --color-accent-muted: rgba(9, 105, 218, 0.4);
+    --color-accent-subtle: #ddf4ff;
+
+    /* Success / Open */
+    --color-success-fg: #1a7f37;
+    --color-success-emphasis: #1f883d;
+    --color-success-muted: rgba(31, 136, 61, 0.4);
+    --color-success-subtle: #dafbe1;
+
+    /* Attention / Warning / Draft */
+    --color-attention-fg: #9a6700;
+    --color-attention-emphasis: #9a6700;
+    --color-attention-muted: rgba(154, 103, 0, 0.4);
+    --color-attention-subtle: #fff8c5;
+
+    /* Danger / Closed / Error */
+    --color-danger-fg: #cf222e;
+    --color-danger-emphasis: #cf222e;
+    --color-danger-muted: rgba(207, 34, 46, 0.4);
+    --color-danger-subtle: #ffebe9;
+
+    /* Merged State */
+    --color-merged-fg: #8250df;
+    --color-merged-emphasis: #8250df;
+    --color-merged-muted: rgba(130, 80, 223, 0.4);
+    --color-merged-subtle: #fbefff;
+
+    /* Unified Diff Tokens */
+    --color-diff-add-bg: rgba(46, 160, 67, 0.15);
+    --color-diff-add-fg: #1a7f37;
+    --color-diff-add-line-num: rgba(26, 127, 55, 0.3);
+    --color-diff-delete-bg: rgba(248, 81, 73, 0.15);
+    --color-diff-delete-fg: #cf222e;
+    --color-diff-delete-line-num: rgba(207, 34, 46, 0.3);
+    --color-diff-hunk-bg: rgba(9, 105, 218, 0.1);
+    --color-diff-hunk-fg: #0969da;
+
+    /* Focus & Shadows */
+    --shadow-overlay: 0 8px 24px rgba(140, 149, 159, 0.2);
+    --ring-focus: #0969da;
+  }
+
+  body {
+    background-color: var(--color-canvas-default);
+    color: var(--color-fg-default);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
