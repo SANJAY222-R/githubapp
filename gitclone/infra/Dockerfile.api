@@ -21,16 +21,19 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8787
+ENV NODE_PATH=/app/node_modules:/app/apps/api/node_modules
 
 # Security hardening: Run as non-root user
 USER node
 
-# Copy compiled backend, static frontend assets, and dependencies
+# Copy compiled backend, static frontend assets, and all workspace dependencies
 COPY --chown=node:node --from=build /app/apps/api/dist ./apps/api/dist
 COPY --chown=node:node --from=build /app/apps/api/package.json ./apps/api/package.json
+COPY --chown=node:node --from=build /app/apps/api/node_modules ./apps/api/node_modules
 COPY --chown=node:node --from=build /app/apps/web/dist ./apps/web/dist
 COPY --chown=node:node --from=build /app/packages/shared/dist ./packages/shared/dist
 COPY --chown=node:node --from=build /app/packages/shared/package.json ./packages/shared/package.json
+COPY --chown=node:node --from=build /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY --chown=node:node --from=build /app/node_modules ./node_modules
 COPY --chown=node:node --from=build /app/package.json ./package.json
 COPY --chown=node:node --from=build /app/infra/entrypoint.sh ./entrypoint.sh

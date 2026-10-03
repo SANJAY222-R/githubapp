@@ -5,9 +5,10 @@ echo "=== GitClone Container Startup ==="
 echo "Node Environment: ${NODE_ENV:-production}"
 echo "Port: ${PORT:-8787}"
 
+export NODE_PATH=/app/node_modules:/app/apps/api/node_modules:/app/packages/shared/node_modules
+
 if [ -n "$DATABASE_URL" ]; then
   echo "Database URL configured. Synchronizing database tables if needed..."
-  # If drizzle migrations or push scripts exist, execute them
   if [ -f "./apps/api/node_modules/.bin/drizzle-kit" ] || [ -f "./node_modules/.bin/drizzle-kit" ]; then
     echo "Running schema sync..."
     npx drizzle-kit push --config=apps/api/drizzle.config.ts 2>/dev/null || true
@@ -23,4 +24,5 @@ else
 fi
 
 echo "Starting GitClone server on port ${PORT:-8787}..."
-exec node apps/api/dist/index.js
+cd /app/apps/api
+exec node dist/index.js
