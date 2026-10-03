@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gitclone:latest
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8787}:8787"
+    environment:
+      NODE_ENV: production
+      PORT: 8787
+      APP_URL: ${APP_URL:-http://localhost:8787}
+      API_URL: ${API_URL:-http://localhost:8787/api}
+      # Neon PostgreSQL Connection String (or local postgres)
+      DATABASE_URL: ${DATABASE_URL:-postgres://gitclone:gitclone_secure_password@postgres:5432/gitclone}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      # Single Shared GitHub PAT for runtime multi-user access
+      GITHUB_PAT: ${GITHUB_PAT:-}
+      SESSION_SECRET: ${SESSION_SECRET:-default_session_secret_change_in_production_32chars}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+    depends_on:
+      - redis
+    networks:
+      - app-net
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - app-net
+
+  # Optional local PostgreSQL (only used when Neon is not provided in DATABASE_URL)
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gitclone}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gitclone_secure_password}
+      POSTGRES_DB: ${POSTGRES_DB:-gitclone}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-net
+
+volumes:
+  pgdata:
+
+networks:
+  app-net:
+    driver: bridge

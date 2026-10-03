@@ -82,3 +82,57 @@ export async function connectPat(token: string): Promise<{ userId: string }> {
 
   return { userId };
 }
+
+let cachedSharedUser: { id: string; githubId: number; login: string; avatarUrl: string; name: string | null } | null = null;
+
+export async function bootstrapSharedPat(): Promise<void> {
+  const pat = process.env.GITHUB_PAT || process.env.SYSTEM_GITHUB_PAT;
+  if (!pat) return;
+
+  try {
+    const { userId } = await connectPat(pat);
+    const userRows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (userRows[0]) {
+      cachedSharedUser = {
+        id: userRows[0].id,
+        githubId: userRows[0].githubId,
+        login: userRows[0].login,
+        avatarUrl: userRows[0].avatarUrl,
+        name: userRows[0].name,
+      };
+      console.log(`[Auth] Initialized shared GitHub account @${cachedSharedUser.login} for multi-user access.`);
+    }
+  } catch (err: any) {
+    console.error(`[Auth] Failed to bootstrap shared GITHUB_PAT: ${err.message || err}`);
+  }
+}
+
+export async function getSharedUser() {
+  if (cachedSharedUser) return cachedSharedUser;
+
+  // Fallback: If any valid PAT user exists in database, use as shared user
+  try {
+    const credRows = await db
+      .select({
+        id: users.id,
+        githubId: users.githubId,
+        login: users.login,
+        avatarUrl: users.avatarUrl,
+        name: users.name,
+      })
+      .from(credentials)
+      .innerJoin(users, eq(credentials.userId, users.id))
+      .where(eq(credentials.authType, "pat"))
+      .limit(1);
+
+    if (credRows[0]) {
+      cachedSharedUser = credRows[0];
+      return cachedSharedUser;
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+}
+

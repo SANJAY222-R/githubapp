@@ -1,5 +1,22 @@
-.env
-node_modules
-dist
-.turbo
+# Dependencies & Build artifacts
+node_modules/
+dist/
+build/
+.turbo/
 *.local
+
+# Environment variables & runtime secrets
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Security keys & certificates
+*.pem
+*.key
+*.crt
+*.pfx
+secrets/
+credentials/
+.DS_Store
+Thumbs.db

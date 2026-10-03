@@ -1,5 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { serveStatic } from "@hono/node-server/serve-static";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { securityHeaders } from "./middleware/securityHeaders.js";
@@ -24,6 +28,19 @@ import streamRoutes from "./routes/stream.routes.js";
 import webhooksRoutes from "./routes/webhooks.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import confirmRoutes from "./routes/confirm.routes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const possibleWebPaths = [
+  path.resolve(__dirname, "../../web/dist"),
+  path.resolve(__dirname, "../../../apps/web/dist"),
+  path.resolve(process.cwd(), "apps/web/dist"),
+  path.resolve(process.cwd(), "web/dist"),
+  path.resolve(process.cwd(), "public"),
+];
+
+const webDistPath = possibleWebPaths.find((p) => fs.existsSync(p));
 
 const app = new Hono();
 
@@ -66,4 +83,21 @@ app.get("/.well-known/security.txt", (c) => {
   return c.text(content, 200, { "Content-Type": "text/plain; charset=utf-8" });
 });
 
+// Static Client File Serving & SPA Fallback
+if (webDistPath) {
+  const relativeRoot = path.relative(process.cwd(), webDistPath).replace(/\\/g, "/");
+  app.use("/*", serveStatic({ root: relativeRoot || "." }));
+
+  // Fallback for SPA routing on non-API GET paths
+  app.get("*", async (c) => {
+    const indexPath = path.join(webDistPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+      const html = fs.readFileSync(indexPath, "utf-8");
+      return c.html(html);
+    }
+    return c.text("GitClone UI Loading...", 200);
+  });
+}
+
 export default app;
+
