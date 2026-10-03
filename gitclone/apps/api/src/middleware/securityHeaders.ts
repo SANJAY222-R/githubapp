@@ -14,9 +14,9 @@ export const securityHeaders = createMiddleware(async (c, next) => {
   const csp = [
     "default-src 'none'",
     "script-src 'self'",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' https://avatars.githubusercontent.com data:",
-    "font-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' https://avatars.githubusercontent.com https://lh3.googleusercontent.com data:",
+    "font-src 'self' https://fonts.gstatic.com data:",
     "connect-src 'self'",
     "worker-src 'self' blob:",
     "frame-ancestors 'none'",
