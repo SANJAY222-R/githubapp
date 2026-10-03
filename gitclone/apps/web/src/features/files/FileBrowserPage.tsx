@@ -204,7 +204,16 @@ export function FileBrowserPage() {
           <div className="bg-canvas-subtle border border-border-default rounded-lg overflow-hidden divide-y divide-border-default shadow-sm flex flex-col">
             <div className="px-4 py-2 bg-canvas-inset font-mono text-[11px] text-fg-muted uppercase tracking-wider flex items-center justify-between">
               <span>{filePath || "root directory"}</span>
-              <span>{directoryEntries.length} items</span>
+              <div className="flex items-center gap-3">
+                <span>{directoryEntries.length} items</span>
+                <Link
+                  to={`/repos/${fullName}/new/${filePath ? filePath + "/" : ""}`}
+                  className="flex items-center gap-1 text-accent-fg hover:underline font-semibold lowercase tracking-normal text-[12px] normal-case"
+                >
+                  <span className="material-symbols-outlined text-[14px]">add</span>
+                  <span>Add file</span>
+                </Link>
+              </div>
             </div>
 
             {directoryEntries.length === 0 ? (
@@ -285,6 +294,15 @@ export function FileBrowserPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <Link
+                        to={`/repos/${fullName}/edit/${filePath}`}
+                        className="h-7 px-2.5 rounded-md bg-canvas-default border border-border-default hover:bg-canvas-subtle text-fg-default text-[12px] font-medium flex items-center gap-1.5 transition-colors text-decoration-none"
+                        title="Edit this file"
+                      >
+                        <span className="material-symbols-outlined text-[15px] text-accent-fg">edit</span>
+                        <span>Edit</span>
+                      </Link>
+
                       {isMarkdown && (
                         <button
                           onClick={() => setViewRaw(!viewRaw)}

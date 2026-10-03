@@ -308,6 +308,15 @@ export function RepoDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Add File Link */}
+            <Link
+              to={`/repos/${owner}/${repo}/new`}
+              className="h-8 px-3 rounded-md bg-canvas-inset hover:bg-canvas-subtle text-fg-default font-medium text-[12px] flex items-center gap-1.5 border border-border-default shadow-sm transition-colors text-decoration-none"
+            >
+              <span className="material-symbols-outlined text-[16px] text-accent-fg">add</span>
+              <span>Add file</span>
+            </Link>
+
             {/* Clone Repository Dropdown */}
             <div className="relative">
               <button
