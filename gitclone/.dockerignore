@@ -1,0 +1,16 @@
+node_modules
+.git
+.github
+dist
+build
+.turbo
+*.local
+.env
+.env.*
+!.env.example
+!.env.docker.example
+docs/runbooks
+docs/threat-model
+coverage
+.vscode
+.idea

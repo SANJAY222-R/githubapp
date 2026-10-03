@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4
-FROM node:22-alpine@sha256:0b0a886dfaa791b8d6978eb865187e5b61aaad6e17415494f6c4be09f7a55cff AS base
+FROM node:22-alpine AS base
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0
 
@@ -25,7 +25,7 @@ RUN pnpm --filter @gitclone/web build
 RUN pnpm --filter @gitclone/api build
 
 # 3. Hardened Production Runner Stage
-FROM node:22-alpine@sha256:0b0a886dfaa791b8d6978eb865187e5b61aaad6e17415494f6c4be09f7a55cff AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8787
