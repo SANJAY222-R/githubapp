@@ -5,18 +5,13 @@ RUN npm install -g pnpm@9.15.0
 
 # 1. Build Stage
 FROM base AS build
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY apps/api/package.json ./apps/api/
-COPY apps/web/package.json ./apps/web/
-COPY packages/shared/package.json ./packages/shared/
-
-# Install all dependencies with intact pnpm virtual store symlinks
-RUN pnpm install --frozen-lockfile
-
-# Copy source code
+# Copy source code first (excluding node_modules via .dockerignore)
 COPY . .
 
-# Build all packages in correct dependency order
+# Clean install all dependencies inside the container environment
+RUN pnpm install --frozen-lockfile
+
+# Compile all workspace packages in dependency order
 RUN pnpm --filter @gitclone/shared build
 RUN pnpm --filter @gitclone/web build
 RUN pnpm --filter @gitclone/api build
