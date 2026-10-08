@@ -7,16 +7,6 @@ echo "Port: ${PORT:-8787}"
 
 export NODE_PATH=/app/node_modules:/app/apps/api/node_modules:/app/packages/shared/node_modules
 
-if [ -n "$DATABASE_URL" ]; then
-  echo "Database URL configured. Synchronizing database tables if needed..."
-  if [ -f "./apps/api/node_modules/.bin/drizzle-kit" ] || [ -f "./node_modules/.bin/drizzle-kit" ]; then
-    echo "Running schema sync..."
-    npx drizzle-kit push --config=apps/api/drizzle.config.ts 2>/dev/null || true
-  fi
-else
-  echo "WARNING: DATABASE_URL is not set. Please supply a Neon PostgreSQL connection string at runtime."
-fi
-
 if [ -n "$GITHUB_PAT" ] || [ -n "$SYSTEM_GITHUB_PAT" ]; then
   echo "Shared GitHub PAT detected. Bootstrapping shared multi-user runtime context..."
 else
